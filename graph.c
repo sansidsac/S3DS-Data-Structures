@@ -1,105 +1,101 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MAX 100
+int source,V,E,visited[20],G[20][20],Q[20],f=-1,r=-1;
 
-struct Node {
-    int data;
-    struct Node* next;
-};
-
-struct Graph {
-    int vertices;
-    struct Node* adjList[MAX];
-};
-
-struct Node* createNode(int data) {
-    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
-    newNode->data = data;
-    newNode->next = NULL;
-    return newNode;
+void DFS(int i){
+    visited[i]=1;
+    printf("%d->",i);
+    for(int j=1;j<=V;j++){
+        if(G[i][j]==1 && visited[j]==0){
+            DFS(j);
+        }
+    }
 }
 
-struct Graph* createGraph(int vertices) {
-    struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
-    graph->vertices = vertices;
-
-    for (int i = 0; i < vertices; ++i)
-        graph->adjList[i] = NULL;
-
-    return graph;
+void enqueue(int item){
+    if(f==-1 && r==-1){
+        f=r=0;
+        Q[r]=item;
+    }
+    else{
+        r++;
+        Q[r]=item;
+    }
 }
 
-void addEdge(struct Graph* graph, int src, int dest) {
-    struct Node* newNode = createNode(dest);
-    newNode->next = graph->adjList[src];
-    graph->adjList[src] = newNode;
-    newNode = createNode(src);
-    newNode->next = graph->adjList[dest];
-    graph->adjList[dest] = newNode;
+int dequeue(){
+    int item;
+    if(f==-1 && r==-1){
+        printf("Queue is empty\n");
+        return -1;
+    }
+    else if(f==r){
+        item=Q[f];
+        f=r=-1;
+        return item;
+    }
+    else{
+        item=Q[f];
+        f++;
+        return item;
+    }
 }
 
-void BFS(struct Graph* graph, int startVertex) {
-    int visited[MAX] = {0};
-    int queue[MAX];
-    int front = -1, rear = -1;
-    visited[startVertex] = 1;
-    queue[++rear] = startVertex;
-    while (front != rear) {
-        int currentVertex = queue[++front];
-        printf("%d ", currentVertex);
-        struct Node* temp = graph->adjList[currentVertex];
-        while (temp != NULL) {
-            int adjVertex = temp->data;
-            if (!visited[adjVertex]) {
-                visited[adjVertex] = 1;
-                queue[++rear] = adjVertex;
+void BFS(int s){
+    visited[s]=1;
+    printf("%d->",s);
+    enqueue(s);
+    while(f!=-1){
+        s=dequeue();
+        for(int i=1;i<=V;i++){
+            if(G[s][i]==1 && visited[i]==0){
+                printf("%d->",i);
+                visited[i]=1;
+                enqueue(i);
             }
-            temp = temp->next;
         }
     }
 }
 
-void DFSUtil(struct Graph* graph, int currentVertex, int visited[]) {
-    visited[currentVertex] = 1;
-    printf("%d ", currentVertex);
-    struct Node* temp = graph->adjList[currentVertex];
-    while (temp != NULL) {
-        int adjVertex = temp->data;
-        if (!visited[adjVertex]) {
-            DFSUtil(graph, adjVertex, visited);
+void main(){
+    int i,j,v1,v2,opt;
+    printf("\t\t\tGraphs\n");
+    printf("Enter the number of vertices: \n");
+    scanf("%d",&V);
+    for(i=1;i<=V;i++){
+        for(j=1;j<=V;j++){
+            G[i][j]=0;
         }
-        temp = temp->next;
     }
-}
 
-void DFS(struct Graph* graph, int startVertex) {
-    int visited[MAX] = {0};
-    DFSUtil(graph, startVertex, visited);
-}
-
-int main() {
-    int vertices, edges;
-    printf("Enter the number of vertices: ");
-    scanf("%d", &vertices);
-    struct Graph* graph = createGraph(vertices);
-    printf("Enter the number of edges: ");
-    scanf("%d", &edges);
-    for (int i = 0; i < edges; ++i) {
-        int src, dest;
-        printf("Enter edge %d : ", i + 1);
-        scanf("%d %d", &src, &dest);
-        addEdge(graph, src, dest);
+    printf("Enter the number of edges: \n");
+    scanf("%d",&E);
+    for(i=1;i<=E;i++){
+        printf("Enter the edges (format: V1 V2) : \n");
+        scanf("%d%d",&v1,&v2);
+        G[v1][v2]=1;
+        G[v2][v1]=1;
     }
-    int startVertex;
-    printf("Enter the starting vertex for traversal: ");
-    scanf("%d", &startVertex);
-    printf("BFS traversal starting from vertex %d: ", startVertex);
-    BFS(graph, startVertex);
+    printf("The adjacency matrix is: \n");
+    for(i=1;i<=V;i++){
+        for(j=1;j<=V;j++){
+            printf("%d\t",G[i][j]);
+        }
+        printf("\n");
+    }
+    for (i=1;i<=V;i++){
+        visited[i]=0;
+    }
+    printf("Enter the source: \n");
+    scanf("%d",&source);
+    printf("DFS Traversal is: \n");
+    DFS(source);
     printf("\n");
-    printf("DFS traversal starting from vertex %d: ", startVertex);
-    DFS(graph, startVertex);
+    for(i=1;i<=V;i++){
+        visited[i]=0;
+    }
+    printf("BFS Traversal is: \n");
+    BFS(source);
     printf("\n");
-    return 0;
 }
-
